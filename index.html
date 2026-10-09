@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lab Maya: Reaksi Eksoterm dan Endoterm</title>
+<style>
+@font-face{font-family:'Sora';font-style:normal;font-weight:400;font-display:swap;src:url(assets/fonts/sora-400.woff2) format('woff2')}
+@font-face{font-family:'Sora';font-style:normal;font-weight:600;font-display:swap;src:url(assets/fonts/sora-600.woff2) format('woff2')}
+@font-face{font-family:'Sora';font-style:normal;font-weight:700;font-display:swap;src:url(assets/fonts/sora-700.woff2) format('woff2')}
+:root{--bg:#e6eef2;--panel:#fff;--ink:#10242f;--mut:#5a7080;--line:#c9d8e0;--hot:#e5484d;--cold:#1f8fd6;--acc:#0f766e;--accInk:#fff;--warn:#fff4d6}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1b25;--panel:#172a37;--ink:#e8f1f5;--mut:#93aab8;--line:#2a4252;--hot:#ff6b6f;--cold:#4cb8f5;--acc:#2dd4bf;--accInk:#06231f;--warn:#3b3417}}
+:root[data-theme="dark"]{--bg:#0e1b25;--panel:#172a37;--ink:#e8f1f5;--mut:#93aab8;--line:#2a4252;--hot:#ff6b6f;--cold:#4cb8f5;--acc:#2dd4bf;--accInk:#06231f;--warn:#3b3417}
+*{box-sizing:border-box;margin:0}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font-family:'Sora','Segoe UI',system-ui,-apple-system,Roboto,Arial,sans-serif}
+body{padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}
+#stage{position:absolute;left:50%;top:50%;width:1280px;height:720px;transform-origin:center;display:flex;flex-direction:column;background:var(--bg)}
+header{height:60px;display:flex;align-items:center;gap:16px;padding:0 20px;border-bottom:2px solid var(--line)}
+header h1{font-size:18px;font-weight:700;white-space:nowrap}
+nav{display:flex;gap:6px;margin-left:auto}
+button{font:inherit;cursor:pointer;border:1.5px solid var(--line);background:var(--panel);color:var(--ink);border-radius:8px;padding:7px 14px;font-size:13px;font-weight:600;transition:transform .08s,background .15s}
+button:hover{border-color:var(--acc)}button:active{transform:scale(.96)}
+button:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+nav button.on{background:var(--acc);color:var(--accInk);border-color:var(--acc)}
+.pri{background:var(--acc);color:var(--accInk);border-color:var(--acc)}
+.hotb{background:var(--hot);color:#fff;border-color:var(--hot)}
+main{flex:1;position:relative;min-height:0}
+.tab{position:absolute;inset:0;padding:14px 20px;display:none;overflow:hidden}
+.tab.on{display:block}
+.card{background:var(--panel);border:1.5px solid var(--line);border-radius:12px;padding:14px 16px}
+h2{font-size:20px;margin-bottom:8px}h3{font-size:15px;margin-bottom:6px}
+p,li{font-size:13.5px;line-height:1.55}ul,ol{padding-left:20px}
+.mut{color:var(--mut)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;height:100%}
+.eks{border-top:6px solid var(--hot)}.end{border-top:6px solid var(--cold)}
+.tag{display:inline-block;padding:2px 10px;border-radius:99px;font-size:12px;font-weight:700;color:#fff}
+.formula{background:var(--bg);border-radius:8px;padding:6px 10px;font-weight:600;font-size:13px;margin:6px 0}
+.sim{display:grid;grid-template-columns:430px 1fr;gap:14px;height:100%}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.chips button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.stat{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;font-size:13px}
+.stat b{display:block;font-size:20px}
+.badge{display:inline-block;padding:3px 12px;border-radius:99px;font-weight:700;font-size:13px;background:var(--line);color:var(--ink)}
+table{border-collapse:collapse;width:100%;font-size:12.5px}th,td{border:1px solid var(--line);padding:5px 7px;text-align:left}th{background:var(--bg)}
+.q{margin-bottom:8px}.q p{font-weight:600}.q label{display:block;font-size:13px;padding:2px 6px;border-radius:6px}
+.q label.ok{background:#2fb36a33}.q label.no{background:#e5484d33}
+textarea{width:100%;font:inherit;font-size:13px;background:var(--bg);color:var(--ink);border:1.5px solid var(--line);border-radius:8px;padding:6px;resize:none}
+@keyframes drop{0%{transform:translateY(0);opacity:1}85%{opacity:1}100%{transform:translateY(270px);opacity:0}}
+.drop{animation:drop 1s ease-in forwards}
+@keyframes sway{0%,100%{transform:translateX(-26px)}50%{transform:translateX(26px)}}
+.stir{animation:sway .5s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){.stir{animation-duration:1.4s}}
+
+#splash{position:absolute;inset:0;z-index:50;background:#0b1a24;transition:opacity .7s;overflow:hidden}
+#splash.out{opacity:0;pointer-events:none}
+#splash img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+#sp-panel{position:absolute;left:50%;bottom:26px;transform:translateX(-50%);width:460px;padding:14px 20px 16px;border-radius:16px;background:rgba(8,22,32,.78);border:1.5px solid rgba(120,220,255,.45);backdrop-filter:blur(6px);text-align:center;color:#e8f6ff}
+#sp-bar{height:12px;border-radius:99px;background:rgba(255,255,255,.15);overflow:hidden}
+#sp-fill{height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,#ff6b4a,#ffd166,#4cc9f0);transition:width .1s linear}
+#sp-info{display:flex;justify-content:space-between;font-size:12.5px;margin:7px 2px 10px}
+#sp-go{font-size:17px;padding:10px 40px;border-radius:99px;border:0;background:#2dd4bf;color:#06231f;font-weight:700}
+#sp-go:disabled{background:#4a6272;color:#a9bcc8;cursor:wait}
+#sp-go:not(:disabled){animation:pulse 1.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 #2dd4bf88}50%{box-shadow:0 0 0 12px #2dd4bf00}}
+@media (prefers-reduced-motion:reduce){#sp-go:not(:disabled){animation:none}}
+
+.dv{display:grid;grid-template-columns:400px 1fr;gap:16px;height:100%}
+.pf{border-radius:20px;overflow:hidden;background:var(--panel);border:1.5px solid var(--line);display:flex;flex-direction:column}
+.pf-art{position:relative;flex:1;min-height:0;background:linear-gradient(155deg,#ff6b4a 0%,#c0397a 48%,#2a7fd6 100%);overflow:hidden}
+.pf-art svg{position:absolute;inset:0;width:100%;height:100%}
+.pf-art img{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:112%;-webkit-mask-image:linear-gradient(#000 82%,transparent);mask-image:linear-gradient(#000 82%,transparent);filter:drop-shadow(0 8px 18px rgba(0,0,0,.35))}
+.pf-chip{position:absolute;padding:5px 12px;border-radius:99px;font-size:12px;font-weight:700;background:rgba(255,255,255,.92);color:#10242f}
+.pf-name{padding:14px 20px 16px}.pf-name h2{font-size:21px;margin:0 0 3px}.pf-name p{color:var(--mut)}
+.inf{display:grid;grid-template-columns:150px 1fr;gap:0;font-size:14px}
+.inf>div{padding:8px 4px;border-bottom:1px solid var(--line)}.inf>div:nth-child(odd){color:var(--mut)}.inf>div:nth-child(even){font-weight:600}
+.ct{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+.ct a{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:12px;text-decoration:none;font-weight:700;font-size:13.5px;color:#fff;transition:transform .1s}
+.ct a:hover{transform:translateY(-2px)}.ct a:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+</style>
+</head>
+<body>
+<div id="stage">
+<header>
+ <h1>🧪 Lab Maya Termokimia</h1>
+ <span class="mut" style="font-size:12px">Reaksi Eksoterm dan Endoterm · Fase F</span>
+ <nav id="tabs">
+  <button data-t="teori" class="on">Teori</button><button data-t="prosedur">Prosedur</button><button data-t="simulasi">Simulasi</button><button data-t="lkpd">LKPD</button><button data-t="dev">Pengembang</button>
+ </nav>
+ <button id="snd" title="Suara">🔊 Suara</button><button id="fs" title="Layar penuh">⛶ Layar penuh</button>
+</header>
+<main>
+<!-- TEORI -->
+<section class="tab on" id="teori"><div class="grid2">
+ <div class="card eks"><span class="tag" style="background:var(--hot)">Eksoterm</span>
+  <h2>Sistem melepas kalor</h2>
+  <p>Pada reaksi eksoterm, kalor berpindah dari sistem ke lingkungan sehingga suhu lingkungan <b>naik</b>. Entalpi produk lebih rendah daripada entalpi reaktan, maka <b>ΔH bernilai negatif</b>.</p>
+  <div class="formula">ΔH = ΣH produk − ΣH reaktan &lt; 0</div>
+  <div id="e1"></div>
+  <p><b>Contoh:</b> pelarutan NaOH, CaO + H₂O, pembakaran, netralisasi asam-basa.</p></div>
+ <div class="card end"><span class="tag" style="background:var(--cold)">Endoterm</span>
+  <h2>Sistem menyerap kalor</h2>
+  <p>Pada reaksi endoterm, sistem menyerap kalor dari lingkungan sehingga suhu lingkungan <b>turun</b>. Entalpi produk lebih tinggi daripada reaktan, maka <b>ΔH bernilai positif</b>.</p>
+  <div class="formula">ΔH = ΣH produk − ΣH reaktan &gt; 0</div>
+  <div id="e2"></div>
+  <p><b>Contoh:</b> pelarutan NH₄NO₃, fotosintesis, penguraian CaCO₃, Ba(OH)₂ + NH₄Cl.</p></div>
+</div>
+<div class="card" style="position:absolute;left:20px;right:20px;bottom:14px;padding:8px 14px;background:var(--warn)"><p><b>Menghitung kalor:</b> q = m × c × ΔT &nbsp;(kalor yang diserap atau dilepas larutan, c air = 4,2 J/g°C). Kalor reaksi = −q larutan.</p></div>
+</section>
+
+<!-- PROSEDUR -->
+<section class="tab" id="prosedur"><div class="grid2">
+ <div class="card"><h2>Langkah kerja</h2>
+  <ol style="display:grid;gap:8px">
+   <li>Buka tab <b>Simulasi</b>. Pilih satu percobaan dengan menekan tombol percobaan.</li>
+   <li>Perhatikan <b>suhu awal</b> air (28°C) pada termometer dan tabel pengamatan.</li>
+   <li>Tekan <b>Tambahkan Zat</b> untuk memasukkan zat ke dalam 100 mL air.</li>
+   <li>Tekan <b>Aduk</b> agar reaksi berlangsung lebih cepat. Amati grafik suhu terhadap waktu.</li>
+   <li>Setelah suhu stabil, tekan <b>Catat Data</b>. Data masuk otomatis ke tab LKPD.</li>
+   <li>Tekan <b>Reset</b>, lalu ulangi untuk percobaan lain. Kerjakan soal pada tab LKPD.</li>
+  </ol></div>
+ <div style="display:grid;gap:14px;grid-template-rows:auto 1fr">
+  <div class="card" style="background:var(--warn)"><h3>⚠ Keselamatan kerja (jika dilakukan di lab nyata)</h3>
+   <ul><li>Gunakan jas lab, kacamata, dan sarung tangan.</li><li>NaOH dan CaO bersifat korosif, jangan disentuh.</li><li>Gas NH₃ berbau tajam, bekerja di ruang berventilasi.</li><li>Gunakan termometer dengan hati-hati.</li></ul></div>
+  <div class="card"><h3>Alat dan bahan</h3>
+   <p>Gelas kimia 250 mL, termometer, batang pengaduk, gelas ukur, neraca. Bahan: NaOH, CaO, NH₄NO₃, Ba(OH)₂·8H₂O, NH₄Cl, akuades.</p>
+   <button class="pri" style="margin-top:10px" onclick="go('simulasi')">Mulai simulasi ▶</button></div>
+ </div></div>
+</section>
+
+<!-- SIMULASI -->
+<section class="tab" id="simulasi"><div class="sim">
+ <div class="card" style="padding:10px 12px">
+  <div class="chips" id="chips"></div>
+  <svg id="scene" viewBox="0 0 400 400" style="width:100%;height:340px;display:block">
+   <defs><clipPath id="bc"><path d="M110 150 L110 380 Q110 392 122 392 L278 392 Q290 392 290 380 L290 150Z"/></clipPath>
+   <clipPath id="th"><rect id="thc" x="338" y="100" width="14" height="260"/></clipPath></defs>
+   <rect x="60" y="392" width="280" height="8" rx="4" fill="var(--line)"/>
+   <g clip-path="url(#bc)"><rect id="liq" x="105" y="230" width="190" height="170" fill="hsl(200 80% 60%)" opacity=".8"/>
+    <g id="bub" fill="#fff" opacity=".7"></g></g>
+   <path d="M110 140 L110 380 Q110 392 122 392 L278 392 Q290 392 290 380 L290 140" fill="none" stroke="var(--ink)" stroke-width="4" stroke-linecap="round"/>
+   <path id="frost" d="M112 230 L112 380 M288 230 L288 380 M122 391 L278 391" stroke="#fff" stroke-width="7" opacity="0" stroke-dasharray="3 5"/>
+   <g id="rodw"><g id="rod"><line x1="200" y1="90" x2="200" y2="372" stroke="var(--mut)" stroke-width="6" stroke-linecap="round"/></g></g>
+   <g id="solid" fill="#f6f1e6" stroke="#bdb6a0"></g>
+   <g id="steam" fill="var(--mut)" opacity="0"></g>
+   <rect x="338" y="100" width="14" height="270" rx="7" fill="var(--bg)" stroke="var(--ink)" stroke-width="2.5"/>
+   <circle cx="345" cy="372" r="15" fill="var(--bg)" stroke="var(--ink)" stroke-width="2.5"/>
+   <g clip-path="url(#th)"><rect id="merc" x="342" y="250" width="6" height="140" fill="var(--hot)"/></g>
+   <circle cx="345" cy="372" r="10" id="mb" fill="var(--hot)"/>
+   <text id="tl" x="345" y="85" text-anchor="middle" font-size="18" font-weight="700" fill="var(--ink)">28,0°C</text>
+  </svg>
+  <div class="row" style="justify-content:center;margin-top:0">
+   <button class="pri" id="bAdd">＋ Tambahkan Zat</button><button id="bStir">🌀 Aduk</button><button id="bRec">📋 Catat Data</button><button class="hotb" id="bReset">↺ Reset</button>
+  </div>
+ </div>
+ <div style="display:grid;grid-template-rows:auto 1fr;gap:14px;min-height:0">
+  <div class="card" style="padding:10px 14px"><h3 id="exname">Grafik suhu terhadap waktu</h3>
+   <svg viewBox="0 0 470 190" style="width:100%;height:210px;display:block" id="graph"></svg></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;min-height:0">
+   <div class="card"><h3>Hasil pengamatan</h3>
+    <div class="stat"><div class="mut">Suhu awal<b id="rT0">28,0</b></div><div class="mut">Suhu sekarang<b id="rT">28,0</b></div><div class="mut">ΔT (°C)<b id="rD">0,0</b></div><div class="mut">q larutan (kJ)<b id="rQ">0,00</b></div></div>
+    <p style="margin-top:6px"><span class="badge" id="rS">Belum bereaksi</span></p>
+    <p class="mut" id="rEq" style="margin-top:6px;font-size:12.5px"></p>
+    <p style="font-size:12.5px;margin-top:4px">Massa larutan 100 g, c = 4,2 J/g°C</p></div>
+   <div class="card"><h3>Diagram tingkat energi</h3><div id="e3"></div></div>
+  </div></div>
+</div></section>
+
+<!-- LKPD -->
+<section class="tab" id="lkpd"><div class="grid2" style="grid-template-columns:1fr 1.1fr">
+ <div style="display:grid;grid-template-rows:auto 1fr;gap:12px;min-height:0">
+  <div class="card"><h3>Tabel data percobaan (terisi dari Simulasi)</h3>
+   <table><thead><tr><th>No</th><th>Percobaan</th><th>T awal</th><th>T akhir</th><th>ΔT</th><th>Jenis</th></tr></thead><tbody id="tb"><tr><td colspan="6" class="mut">Belum ada data. Lakukan percobaan lalu tekan Catat Data.</td></tr></tbody></table>
+   <div class="row"><button class="hotb" id="lReset">↺ Reset LKPD</button></div></div>
+  <div class="card"><h3>Kesimpulan</h3><p class="mut" style="margin-bottom:4px">Dari datamu, jelaskan perbedaan reaksi eksoterm dan endoterm berdasarkan perubahan suhu dan tanda ΔH.</p><textarea id="ess" rows="5" placeholder="Tulis kesimpulanmu di sini..."></textarea></div>
+ </div>
+ <div class="card" style="min-height:0"><h3>Soal pemahaman</h3><div id="qs"></div>
+  <div class="row"><button class="pri" id="qCheck">Periksa jawaban</button><span id="qRes" style="font-weight:700;align-self:center"></span></div></div>
+</div></section>
+
+<!-- PENGEMBANG -->
+<section class="tab" id="dev"><div class="dv">
+ <div class="pf"><div class="pf-art">
+  <svg viewBox="0 0 400 470" aria-hidden="true" fill="none" stroke="#fff" stroke-opacity=".38" stroke-width="1.6"><ellipse cx="200" cy="215" rx="185" ry="68" transform="rotate(-28 200 215)"/><ellipse cx="200" cy="215" rx="185" ry="68" transform="rotate(28 200 215)"/><ellipse cx="200" cy="215" rx="185" ry="68" transform="rotate(90 200 215)"/><circle cx="52" cy="140" r="7" fill="#fff" stroke="none" fill-opacity=".8"/><circle cx="352" cy="300" r="9" fill="#fff" stroke="none" fill-opacity=".8"/><circle cx="318" cy="72" r="5" fill="#fff" stroke="none" fill-opacity=".8"/></svg>
+  <span class="pf-chip" style="left:16px;top:16px">🔥 Eksoterm · ΔH &lt; 0</span><span class="pf-chip" style="right:16px;top:58px">❄ Endoterm · ΔH &gt; 0</span>
+  <img alt="Foto Bening Pamularsih, S.Si., M.Pd." src="assets/images/bening-pamularsih.webp"></div>
+  <div class="pf-name"><h2>Bening Pamularsih, S.Si., M.Pd.</h2><p>Guru Kimia · SMA Negeri 1 Klaten</p></div></div>
+ <div style="display:grid;grid-template-rows:auto 1fr;gap:14px;min-height:0">
+  <div class="card"><h2>Profil pengembang</h2>
+   <div class="inf"><div>Nama</div><div>Bening Pamularsih, S.Si., M.Pd.</div><div>Instansi</div><div>SMA Negeri 1 Klaten</div><div>Mata pelajaran</div><div>Kimia · Fase F (Kelas XI) · Termokimia</div><div>Versi</div><div>1.0 · 2026</div></div>
+   <div class="ct"><a style="background:#d6453d" href="mailto:beningpamularsih6783@gmail.com">✉ beningpamularsih6783@gmail.com</a><a style="background:#1f9d57" href="https://wa.me/6285643796076" target="_blank" rel="noopener">💬 WhatsApp 0856-4379-6076</a></div></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;min-height:0">
+   <div class="card"><h3>Tujuan pembelajaran</h3><ul><li>Membedakan reaksi eksoterm dan endoterm dari perubahan suhu.</li><li>Menghubungkan tanda ΔH dengan diagram tingkat energi.</li><li>Menghitung kalor reaksi dengan q = m·c·ΔT.</li></ul></div>
+   <div class="card"><h3>Catatan</h3><p>Nilai ΔT pada simulasi adalah model pendekatan untuk pembelajaran, bukan hasil pengukuran nyata. Efek suara dibuat dengan Web Audio API.</p></div>
+  </div></div>
+</div></section>
+</main>
+<div id="splash" role="dialog" aria-label="Layar pembuka"><img alt="Lab Virtual: Reaksi Eksoterm dan Endoterm" src="assets/images/splash.jpg">
+<div id="sp-panel"><div id="sp-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="sp-fill"></div></div>
+<div id="sp-info"><span id="sp-msg">Memuat…</span><b id="sp-pct">0%</b></div>
+<button id="sp-go" disabled>Mulai ▶</button></div></div>
+</div>
+
+<script>
+const $=s=>document.querySelector(s);
+/* skala 16:9 */
+function fit(){const s=Math.min(innerWidth/1280,innerHeight/720);$('#stage').style.transform=`translate(-50%,-50%) scale(${s})`}
+addEventListener('resize',fit);fit();
+/* suara (assets/sound/*.wav) */
+let SO=true;const SND={};['click','hover','exo','endo','ok','bad','reset','stir','start'].forEach(n=>{const a=new Audio('assets/sound/'+n+'.wav');a.preload='auto';SND[n]=a});
+function play(n){if(!SO)return;try{const a=SND[n].cloneNode();a.play().catch(()=>{})}catch(e){}}
+const sfx={};Object.keys(SND).forEach(n=>sfx[n]=()=>play(n));
+$('#snd').onclick=()=>{SO=!SO;$('#snd').textContent=SO?'🔊 Suara':'🔇 Senyap';if(SO)sfx.click()};
+$('#fs').onclick=()=>{sfx.click();document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen()};
+/* tab */
+function go(id){document.querySelectorAll('.tab').forEach(e=>e.classList.toggle('on',e.id===id));document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===id));sfx.click()}
+document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>go(b.dataset.t));
+/* diagram energi */
+function energy(type){const exo=type==='eks',ry=exo?45:115,py=exo?115:45,top=Math.min(ry,py)-28,c=exo?'var(--hot)':'var(--cold)',my=(ry+py)/2;
+return `<svg viewBox="0 0 320 170" style="width:100%;height:${type==='sim'?150:200}px"><line x1="30" y1="10" x2="30" y2="155" stroke="var(--mut)" stroke-width="2"/><line x1="30" y1="155" x2="305" y2="155" stroke="var(--mut)" stroke-width="2"/>
+<text x="6" y="14" font-size="10" fill="var(--mut)">H</text>
+<path d="M35 ${ry} L95 ${ry} Q145 ${top} 190 ${py} L265 ${py}" fill="none" stroke="${c}" stroke-width="3.5"/>
+<text x="38" y="${ry-6}" font-size="11" fill="var(--ink)">Reaktan</text><text x="215" y="${py-6}" font-size="11" fill="var(--ink)">Produk</text>
+<line x1="280" y1="${ry}" x2="280" y2="${py}" stroke="${c}" stroke-width="2.5"/><path d="M274 ${py+(exo?-8:8)} L280 ${py} L286 ${py+(exo?-8:8)}" fill="none" stroke="${c}" stroke-width="2.5"/>
+<text x="186" y="${my+4}" font-size="12" font-weight="700" fill="${c}">ΔH ${exo?'< 0':'> 0'}</text></svg>`}
+$('#e1').innerHTML=energy('eks');$('#e2').innerHTML=energy('end');
+/* percobaan */
+const EX=[
+{n:'NaOH + air',eq:'NaOH(s) → Na⁺(aq) + OH⁻(aq)',dT:14,dH:'≈ −44 kJ/mol'},
+{n:'CaO + air',eq:'CaO(s) + H₂O(l) → Ca(OH)₂(aq)',dT:21,dH:'≈ −65 kJ/mol'},
+{n:'NH₄NO₃ + air',eq:'NH₄NO₃(s) → NH₄⁺(aq) + NO₃⁻(aq)',dT:-13,dH:'≈ +26 kJ/mol'},
+{n:'Ba(OH)₂ + NH₄Cl',eq:'Ba(OH)₂(s) + 2NH₄Cl(s) → BaCl₂ + 2NH₃ + 2H₂O',dT:-22,dH:'ΔH positif'}];
+const T0=28,fmt=(x,d=1)=>x.toFixed(d).replace('.',',');
+let ex=0,added=false,stir=false,T=T0,t=0,ser=[[0,T0]],recorded=false,data=[];
+$('#chips').innerHTML=EX.map((e,i)=>`<button data-i="${i}">${e.n}</button>`).join('');
+document.querySelectorAll('#chips button').forEach(b=>b.onclick=()=>{sel(+b.dataset.i)});
+function sel(i){sfx.click();ex=i;doReset(false);document.querySelectorAll('#chips button').forEach((b,j)=>b.classList.toggle('on',j===i));$('#exname').textContent='Percobaan: '+EX[i].n;$('#rEq').textContent=EX[i].eq;$('#e3').innerHTML=energy(EX[i].dT>0?'eks':'end').replace('type==="sim"','')}
+/* bubbles & solid */
+$('#solid').innerHTML=Array.from({length:10},(_,i)=>`<circle cx="${165+(i%5)*17}" cy="${60+Math.floor(i/5)*10}" r="5"/>`).join('');
+$('#bub').innerHTML=Array.from({length:10},(_,i)=>`<circle class="b" cx="${125+i*16}" cy="${380-i*7}" r="${2+i%3}"/>`).join('');
+$('#steam').innerHTML=Array.from({length:5},(_,i)=>`<circle class="s" cx="${140+i*30}" cy="130" r="9"/>`).join('');
+function hue(){if(T>=T0)return 200-Math.min(1,(T-T0)/22)*185;return 200+Math.min(1,(T0-T)/22)*18}
+let ph=0;
+function draw(){ph+=.1;
+ $('#liq').setAttribute('fill',`hsl(${hue()} 80% 60%)`);
+ const h=Math.max(0,Math.min(1,(T+5)/70))*250;$('#merc').setAttribute('y',372-h+5);$('#merc').setAttribute('height',h+20);
+ const col=T<T0-1?'var(--cold)':'var(--hot)';$('#merc').setAttribute('fill',col);$('#mb').setAttribute('fill',col);
+ $('#tl').textContent=fmt(T)+'°C';
+ const rx=added&&ex<2&&t<50;document.querySelectorAll('#bub .b').forEach((c,i)=>{const y=380-((ph*30+i*37)%150);c.setAttribute('cy',y);c.setAttribute('opacity',rx?1:0)});
+ $('#frost').setAttribute('opacity',Math.max(0,Math.min(1,(T0-6-T)/10)));
+ $('#steam').setAttribute('opacity',T>T0+8?Math.min(.5,(T-T0-8)/20):0);
+ document.querySelectorAll('#steam .s').forEach((c,i)=>{c.setAttribute('cy',135-((ph*14+i*11)%60))});
+ $('#rod').classList.toggle('stir',stir)}
+setInterval(()=>{draw();if(!added||t>=60)return;t+=.1;const tg=T0+EX[ex].dT;T+=(tg-T)*(stir?.05:.02);if(Math.round(t*10)%5===0){ser.push([t,T]);graph()}info()},100);
+function info(){const d=T-T0;$('#rT0').textContent=fmt(T0);$('#rT').textContent=fmt(T);$('#rD').textContent=(d>0?'+':'')+fmt(d);$('#rQ').textContent=fmt(100*4.2*d/1000,2);
+ const s=$('#rS');if(!added){s.textContent='Belum bereaksi';s.style.background='var(--line)';s.style.color='var(--ink)'}
+ else if(Math.abs(d)<.8){s.textContent='Mengamati…';s.style.background='var(--line)'}
+ else if(d>0){s.textContent='Eksoterm · ΔH < 0';s.style.background='var(--hot)';s.style.color='#fff'}
+ else{s.textContent='Endoterm · ΔH > 0';s.style.background='var(--cold)';s.style.color='#fff'}}
+function graph(){let g='';for(let i=0;i<=6;i++){const y=170-i*25;g+=`<line x1="40" x2="450" y1="${y}" y2="${y}" stroke="var(--line)"/><text x="34" y="${y+4}" font-size="10" text-anchor="end" fill="var(--mut)">${i*10}</text>`}
+ for(let i=0;i<=6;i++){g+=`<text x="${40+i*68.3}" y="186" font-size="10" text-anchor="middle" fill="var(--mut)">${i*10}</text>`}
+ g+=`<text x="245" y="186" font-size="0">s</text><text x="8" y="12" font-size="10" fill="var(--mut)">T (°C)</text><text x="452" y="186" font-size="10" fill="var(--mut)" text-anchor="end">t (s)</text>`;
+ g+=`<line x1="40" x2="450" y1="${170-T0*2.5}" y2="${170-T0*2.5}" stroke="var(--mut)" stroke-dasharray="4 4"/>`;
+ const pts=ser.map(p=>`${40+p[0]/60*410},${170-Math.max(0,Math.min(60,p[1]))*2.5}`).join(' ');
+ g+=`<polyline points="${pts}" fill="none" stroke="${T>=T0?'var(--hot)':'var(--cold)'}" stroke-width="3" stroke-linejoin="round"/>`;$('#graph').innerHTML=g}
+$('#bAdd').onclick=()=>{if(added){sfx.bad();return}added=true;recorded=false;$('#solid').classList.remove('drop');void $('#solid').getBoundingClientRect();$('#solid').classList.add('drop');EX[ex].dT>0?sfx.exo():sfx.endo()};
+$('#bStir').onclick=()=>{stir=!stir;$('#bStir').classList.toggle('on',stir);$('#bStir').style.background=stir?'var(--acc)':'';$('#bStir').style.color=stir?'var(--accInk)':'';sfx.stir()};
+$('#bRec').onclick=()=>{if(!added||Math.abs(T-T0)<1||recorded){sfx.bad();return}recorded=true;data.push({n:EX[ex].n,a:T0,b:T,d:T-T0});renderTb();sfx.ok()};
+function doReset(snd=true){added=false;stir=false;T=T0;t=0;ser=[[0,T0]];recorded=false;$('#solid').classList.remove('drop');$('#bStir').style.background='';$('#bStir').style.color='';graph();info();draw();if(snd)sfx.reset()}
+$('#bReset').onclick=()=>doReset();
+function renderTb(){$('#tb').innerHTML=data.length?data.map((r,i)=>`<tr><td>${i+1}</td><td>${r.n}</td><td>${fmt(r.a)}</td><td>${fmt(r.b)}</td><td>${r.d>0?'+':''}${fmt(r.d)}</td><td><b style="color:var(${r.d>0?'--hot':'--cold'})">${r.d>0?'Eksoterm':'Endoterm'}</b></td></tr>`).join(''):'<tr><td colspan="6" class="mut">Belum ada data. Lakukan percobaan lalu tekan Catat Data.</td></tr>'}
+$('#lReset').onclick=()=>{data=[];renderTb();$('#ess').value='';buildQ();$('#qRes').textContent='';sfx.reset()};
+/* soal */
+const Q=[
+{q:'Saat zat dilarutkan, suhu larutan naik. Reaksi tersebut termasuk…',o:['Eksoterm','Endoterm','Tanpa perubahan energi','ΔH positif'],a:0},
+{q:'Pada reaksi endoterm, nilai ΔH adalah…',o:['Negatif','Nol','Positif','Tidak dapat ditentukan'],a:2},
+{q:'100 g larutan (c = 4,2 J/g°C) naik 10°C. Kalor yang diserap larutan adalah…',o:['420 J','4,2 kJ','42 kJ','0,42 kJ'],a:1},
+{q:'Pada diagram tingkat energi reaksi eksoterm, entalpi produk…',o:['Lebih tinggi dari reaktan','Sama dengan reaktan','Lebih rendah dari reaktan','Selalu nol'],a:2}];
+function buildQ(){$('#qs').innerHTML=Q.map((x,i)=>`<div class="q"><p>${i+1}. ${x.q}</p>${x.o.map((o,j)=>`<label><input type="radio" name="q${i}" value="${j}"> ${'ABCD'[j]}. ${o}</label>`).join('')}</div>`).join('')}
+buildQ();
+$('#qCheck').onclick=()=>{let s=0;Q.forEach((x,i)=>{const v=document.querySelector(`input[name=q${i}]:checked`);document.querySelectorAll(`input[name=q${i}]`).forEach(r=>{const l=r.parentElement;l.classList.remove('ok','no');if(+r.value===x.a)l.classList.add('ok');else if(r.checked)l.classList.add('no')});if(v&&+v.value===x.a)s++});
+ $('#qRes').textContent=`Skor: ${s} / ${Q.length}`;s>=3?sfx.ok():sfx.bad()};
+sel(0);graph();info();
+
+/* splash */
+(function(){const f=$('#sp-fill'),pc=$('#sp-pct'),ms=$('#sp-msg'),go=$('#sp-go'),bar=$('#sp-bar');let p=0;
+const M=[[0,'Memuat modul simulasi…'],[35,'Menyiapkan efek suara…'],[70,'Menyusun LKPD dan soal…'],[100,'Siap! Tekan Mulai']];
+const iv=setInterval(()=>{p=Math.min(100,p+1+Math.random()*2.2);const v=Math.floor(p);f.style.width=p+'%';pc.textContent=v+'%';bar.setAttribute('aria-valuenow',v);
+ ms.textContent=M.filter(m=>v>=m[0]).pop()[1];
+ if(p>=100){clearInterval(iv);go.disabled=false;go.focus()}},45);
+go.onmouseenter=()=>{if(!go.disabled)play('hover')};
+go.onclick=()=>{play('start');
+ $('#splash').classList.add('out');setTimeout(()=>$('#splash').style.display='none',750)};
+})();
+</script>
+</body>
+</html>
